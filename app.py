@@ -11,6 +11,7 @@ import plotly.graph_objects as go
 import plotly.express as px
 import tempfile
 import os
+import torch
 
 # Initialize MediaPipe and YOLO models
 @st.cache_resource
@@ -18,20 +19,36 @@ def load_models():
     mpDraw = mp.solutions.drawing_utils
     mpPose = mp.solutions.pose
     pose = mpPose.Pose()
+    
+    # Load models and move to GPU if available
     model1 = YOLO('yolov8m.pt')
-    model = YOLO('best.pt')
+    model_path = os.path.join(os.path.dirname(__file__), 'Model', 'weights', 'best.pt')
+    model = YOLO(model_path)
+    
+    # Move models to GPU if available
+    if torch.cuda.is_available():
+        model1.to('cuda')
+        model.to('cuda')
+        st.success("🚀 Models loaded on GPU for faster inference!")
+    else:
+        st.info("💻 Models running on CPU")
+    
     return mpDraw, mpPose, pose, model1, model
 
 def process_frame(frame, pose, model):
     frame = cv2.resize(frame, (1020, 500))
-    results = model.predict(frame)
+    
+    # Use GPU for inference if available
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    results = model.predict(frame, device=device)
+    
     compliance_data = {
         'helmet': False,
         'vest': False,
         'mask': False
     }
     
-    a = results[0].boxes.data
+    a = results[0].boxes.data.cpu()
     px = pd.DataFrame(a).astype("float")
     
     for index, row in px.iterrows():
@@ -43,8 +60,8 @@ def process_frame(frame, pose, model):
             imgRGB = cv2.cvtColor(worker_frame, cv2.COLOR_BGR2RGB)
             pose_results = pose.process(imgRGB)
             
-            worker_results = model.predict(worker_frame)
-            worker_a = worker_results[0].boxes.data
+            worker_results = model.predict(worker_frame, device=device)
+            worker_a = worker_results[0].boxes.data.cpu()
             worker_px = pd.DataFrame(worker_a).astype("float")
             
             if pose_results.pose_landmarks:
@@ -294,6 +311,13 @@ def main():
     st.set_page_config(page_title="PPE Compliance Monitor", layout="wide")
     
     st.title("PPE Compliance Monitoring Dashboard")
+    
+    # Display GPU status
+    if torch.cuda.is_available():
+        gpu_name = torch.cuda.get_device_name(0)
+        st.sidebar.success(f"🚀 GPU: {gpu_name}")
+    else:
+        st.sidebar.info("💻 CPU Mode")
     
     # Load models
     mpDraw, mpPose, pose, model1, model = load_models()
