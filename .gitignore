@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Virtual Environment
 venv/
 env/
@@ -33,3 +34,6 @@ Thumbs.db
 
 # Streamlit
 .streamlit/secrets.toml
+=======
+venv/
+>>>>>>> ad90e3b82f4f3c2987a8f0954bc64ca9a960a71e
