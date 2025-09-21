@@ -1,0 +1,26 @@
+# Core dependencies for PPE Detection App
+streamlit>=1.24.0,<1.46.0
+plotly>=5.13.0
+
+# Computer Vision and ML
+opencv-python>=4.7.0,<5.0.0
+mediapipe>=0.10.0,<0.11.0
+ultralytics>=8.0.0
+torch>=2.0.0,<3.0.0
+torchvision>=0.15.0,<1.0.0
+
+# Data processing
+numpy>=1.24.0,<2.0.0
+pandas>=1.5.3
+Pillow>=9.5.0
+scipy>=1.10.0
+
+# Utilities
+PyYAML>=6.0.2
+tqdm>=4.67.1
+requests>=2.32.3
+
+# MediaPipe dependencies (automatically handled but listed for clarity)
+protobuf>=4.21.0,<5.0.0
+absl-py>=1.0.0
+attrs>=21.0.0
